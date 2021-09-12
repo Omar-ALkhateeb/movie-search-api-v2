@@ -1,5 +1,7 @@
-﻿using LiteDB;
+﻿using Elasticsearch.Net;
+using LiteDB;
 using Movie.Base;
+using Movie.DB;
 using Nest;
 using Quartz;
 using Quartz.Impl;
@@ -24,16 +26,16 @@ namespace Movie.CronJobScheduler
             // and start it off
             await _scheduler.Start();
         }
-        public async Task CreateJob(ElasticClient esclient, ILiteCollection<MovieEntity> col)
+        public async Task CreateJob(ElasticClient esclient, IDBC<MovieEntity> db)
         {
             // create job
-            IJobDetail job = JobBuilder.Create<SimpleJob>()
+            IJobDetail job = JobBuilder.Create<Job>()
                 .WithIdentity("job1", "group1")
                 .Build();
 
             // pass the db and elastic client to my job
             job.JobDataMap["client"] = esclient;
-            job.JobDataMap["col"] = col;
+            job.JobDataMap["db"] = db;
 
 
             // create trigger
@@ -47,18 +49,30 @@ namespace Movie.CronJobScheduler
             await _scheduler.ScheduleJob(job, trigger);
         }
     }
-    public class SimpleJob : IJob
+    public class Job : IJob
     {
         Task IJob.Execute(IJobExecutionContext context)
         {
             var client = context.JobDetail.JobDataMap["client"] as ElasticClient;
-            var col = context.JobDetail.JobDataMap["col"] as ILiteCollection<MovieEntity>;
+            var db = context.JobDetail.JobDataMap["db"] as IDBC<MovieEntity>;
 
-            var results = col.FindAll();
+            //var results = col.FindAll();
             // Console.WriteLine(results.ToList()[0].MovieName);
-            MovieEntity.SeedSearch(client, col);
-            Console.WriteLine("sseding task done");
+            SeedSearch(client, db);
+            Console.WriteLine("updating elasticsearch is done");
             return null;
+        }
+
+        public static void SeedSearch(ElasticClient client, IDBC<MovieEntity>  db)
+        {
+            // delete all data retrive the new values from db then bulk insert it
+            client.DeleteByQuery<MovieEntity>(del => del
+                .Query(q => q.MatchAll())
+            );
+            client.Bulk(b => b
+                .IndexMany<MovieEntity>(db.FindAll())
+                .Refresh(Refresh.WaitFor)
+            );
         }
     }
 }

@@ -4,10 +4,6 @@ using System;
 
 namespace Movie.ElasticSearch
 {
-    public interface IES
-    {
-
-    }
     public class ES
     {
         private readonly ConnectionSettings _settings;

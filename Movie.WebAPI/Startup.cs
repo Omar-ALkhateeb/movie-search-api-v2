@@ -33,22 +33,24 @@ namespace Movie.WebAPI
             // elastic search setup
             var esClient = new ES().Get();
 
-            // litedb setup
-            DBC db = new DBC();
-            var col = db.Create();
+            // liteDB setup
+            IDBC<MovieEntity> db = new LiteDBC();
+
+            // init movieServices
+            IMovieServices movieServices = new MovieServices(db, esClient);
 
             // seeding on start
-            if (MovieEntity.IsEmpty(col))
+            if (movieServices.IsEmpty())
             {
                 Console.WriteLine("seeding...");
-                MovieEntity.SeedDB(col);
-                MovieEntity.SeedSearch(esClient, col);
+                movieServices.SeedDB();
+                Job.SeedSearch(esClient, db);
             }
 
             // cronjob setup
             CronJob sched = new CronJob();
             await sched.StartSchedulerAsync();
-            await sched.CreateJob(esClient, col);
+            await sched.CreateJob(esClient, db);
 
             // cors
             services.AddCors(options =>
@@ -60,8 +62,7 @@ namespace Movie.WebAPI
                     });
             });
 
-            services.AddSingleton(esClient);
-            services.AddSingleton(col);
+            services.AddSingleton(movieServices);
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
