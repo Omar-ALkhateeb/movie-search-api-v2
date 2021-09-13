@@ -8,8 +8,8 @@ based on [This stackoverflow answer](https://stackoverflow.com/questions/4171196
 ## structure
  - Movie.Base (business logic and service interfaces)
  - Movie.CronJob (cronjob scheduler using Quartz) for updating elastic search on interval
- - Movie.DB (database client interfaces and data access layer)
- - Movie.ElasticSearch (elasticsearch client)
+ - Movie.DB (database client interfaces and data access layer) liteDB chosen for simplicity and speed
+ - Movie.ElasticSearch (elasticsearch client) using NEST
  - Movie.WebAPI (routes, controllers and service classes)
 
 ## usage
