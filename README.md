@@ -1,8 +1,16 @@
 # movie-search-api-v2
-asp.net 5 core api with elasticsearch and liteDB 
+movie search engine
+asp.net 5 core api with elasticsearch client and liteDB for handling user event updates (clicks/views) and migratinbg it over to elasticsearch when traffic is low to get around  many elasticsearch updates which are very I/O intensive
 
 ## acknowledgements
 based on [This stackoverflow answer](https://stackoverflow.com/questions/41711961/elasticsearch-user-clicks-feedback/41716811#41716811)
+
+## structure
+ - Movie.Base (business logic and service interfaces)
+ - Movie.CronJob (cronjob scheduler using Quartz) for updating elastic search on interval
+ - Movie.DB (database client interfaces and data access layer)
+ - Movie.ElasticSearch (elasticsearch client)
+ - Movie.WebAPI (routes, controllers and service classes)
 
 ## usage
 start elasticsearch
