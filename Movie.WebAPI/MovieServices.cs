@@ -12,9 +12,9 @@ namespace Movie.WebAPI
 {
     public class MovieServices : IMovieServices
     {
-        private readonly IDBC<MovieEntity> _db;
+        private readonly IEntityDataAcess<MovieEntity> _db;
         private readonly ElasticClient _elasticClient;
-        public MovieServices(IDBC<MovieEntity> db, ElasticClient elasticClient)
+        public MovieServices(IEntityDataAcess<MovieEntity> db, ElasticClient elasticClient)
         {
             _elasticClient = elasticClient;
             _db = db;

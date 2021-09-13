@@ -26,7 +26,7 @@ namespace Movie.CronJobScheduler
             // and start it off
             await _scheduler.Start();
         }
-        public async Task CreateJob(ElasticClient esclient, IDBC<MovieEntity> db)
+        public async Task CreateJob(ElasticClient esclient, IEntityDataAcess<MovieEntity> db)
         {
             // create job
             IJobDetail job = JobBuilder.Create<Job>()
@@ -54,7 +54,7 @@ namespace Movie.CronJobScheduler
         Task IJob.Execute(IJobExecutionContext context)
         {
             var client = context.JobDetail.JobDataMap["client"] as ElasticClient;
-            var db = context.JobDetail.JobDataMap["db"] as IDBC<MovieEntity>;
+            var db = context.JobDetail.JobDataMap["db"] as IEntityDataAcess<MovieEntity>;
 
             //var results = col.FindAll();
             // Console.WriteLine(results.ToList()[0].MovieName);
@@ -63,7 +63,7 @@ namespace Movie.CronJobScheduler
             return null;
         }
 
-        public static void SeedSearch(ElasticClient client, IDBC<MovieEntity>  db)
+        public static void SeedSearch(ElasticClient client, IEntityDataAcess<MovieEntity> db)
         {
             // delete all data retrive the new values from db then bulk insert it
             client.DeleteByQuery<MovieEntity>(del => del

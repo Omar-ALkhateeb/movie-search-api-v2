@@ -7,46 +7,19 @@ namespace Movie.DB
 {
     public interface IDBC<T>
     {
-        public void BulkInsert(T[] ts);
-        public T UpdateOne(T t);
-        public T FindOne(string id);
-        public T[] FindAll();
+        public T getDatabse();
     }
-    public class LiteDBC:IDBC<MovieEntity>
+    public class LiteDBC : IDBC<LiteDatabase>
     {
-        private readonly ILiteCollection<MovieEntity> _col;
+        private readonly LiteDatabase _db;
         public LiteDBC()
         {
-            var db = new LiteDatabase(@"Movies.db");
-            _col = db.GetCollection<MovieEntity>("movies");
+            _db = new LiteDatabase(@"Movies.db");
         }
 
-        public void BulkInsert(MovieEntity[] movies)
+        public LiteDatabase getDatabse()
         {
-            _col.InsertBulk(movies);
-        }
-
-        public MovieEntity[] FindAll()
-        {
-            var movies = new List<MovieEntity>();
-            var res = _col.FindAll();
-            foreach(var m in res)
-            {
-                movies.Add(m);
-            }
-
-            return movies.ToArray();
-        }
-
-        public MovieEntity FindOne(string movieName)
-        {
-            return _col.FindOne(x => x.MovieName == movieName);
-        }
-
-        public MovieEntity UpdateOne(MovieEntity movie)
-        {
-            _col.Update(movie);
-            return movie;
+            return _db;
         }
     }
 }

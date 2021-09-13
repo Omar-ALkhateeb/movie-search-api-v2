@@ -1,3 +1,4 @@
+using LiteDB;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -34,23 +35,24 @@ namespace Movie.WebAPI
             var esClient = new ES().Get();
 
             // liteDB setup
-            IDBC<MovieEntity> db = new LiteDBC();
+            IDBC<LiteDatabase> db = new LiteDBC();
+            IEntityDataAcess<MovieEntity> movieAcessLayer = new MovieEntityAcessLayer(db.getDatabse());
 
             // init movieServices
-            IMovieServices movieServices = new MovieServices(db, esClient);
+            IMovieServices movieServices = new MovieServices(movieAcessLayer, esClient);
 
             // seeding on start
             if (movieServices.IsEmpty())
             {
                 Console.WriteLine("seeding...");
                 movieServices.SeedDB();
-                Job.SeedSearch(esClient, db);
+                Job.SeedSearch(esClient, movieAcessLayer);
             }
 
             // cronjob setup
             CronJob sched = new CronJob();
             await sched.StartSchedulerAsync();
-            await sched.CreateJob(esClient, db);
+            await sched.CreateJob(esClient, movieAcessLayer);
 
             // cors
             services.AddCors(options =>
